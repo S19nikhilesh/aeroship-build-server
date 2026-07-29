@@ -1,0 +1,41 @@
+name: Run Build Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      GIT_REPOSITORY_URL:
+        description: 'User Git Repository URL'
+        required: true
+        type: string
+      PROJECT_ID:
+        description: 'Project ID'
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Build Server Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Build Server Dependencies
+        run: npm install
+
+      - name: Clone User Repo into output folder
+        run: |
+          git clone "${{ github.event.inputs.GIT_REPOSITORY_URL }}" ./output
+
+      - name: Run Build and Upload Script
+        run: node script.js
+        env:
+          VARIABLE_NAME: ${{ secrets.REDIS_URL }}
+          ACCESS_ID: ${{ secrets.AWS_ACCESS_ID }}
+          SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          PROJECT_ID: ${{ github.event.inputs.PROJECT_ID }}
