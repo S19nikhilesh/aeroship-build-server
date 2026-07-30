@@ -8,7 +8,7 @@ const Redis =require('ioredis')
 
 require('dotenv').config();
 
-new Redis(process.env.VARIABLE_NAME, {
+const publisher= new Redis(process.env.VARIABLE_NAME, {
     maxRetriesPerRequest: 1, // फालतू री-ट्राई करके टाइम वेस्ट नहीं करेगा
     retryStrategy: () => null // कनेक्शन टूटते ही तुरंत गिव-अप कर देगा
   });
