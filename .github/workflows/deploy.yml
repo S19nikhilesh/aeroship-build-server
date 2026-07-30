@@ -27,9 +27,9 @@ jobs:
         env:
           GIT_REPOSITORY_URL: ${{ github.event.inputs.GIT_REPOSITORY_URL }}
           PROJECT_ID: ${{ github.event.inputs.PROJECT_ID }}
-          VARIABLE_NAME: ${{ secrets.REDIS_URL }}
-          ACCESS_ID: ${{ secrets.AWS_ACCESS_ID }}
-          SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          VARIABLE_NAME: ${{ secrets.VARIABLE_NAME }}
+          ACCESS_ID: ${{ secrets.ACCESS_ID }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
         run: |
           docker run \
             -e GIT_REPOSITORY_URL="$GIT_REPOSITORY_URL" \
