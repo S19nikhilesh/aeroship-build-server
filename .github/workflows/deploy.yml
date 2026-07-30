@@ -20,7 +20,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Build and Run Docker Container
+      - name: Build Docker Image
+        run: docker build -t aeroship-builder .
+
+      - name: Run Docker Container
         env:
           GIT_REPOSITORY_URL: ${{ github.event.inputs.GIT_REPOSITORY_URL }}
           PROJECT_ID: ${{ github.event.inputs.PROJECT_ID }}
@@ -28,14 +31,10 @@ jobs:
           ACCESS_ID: ${{ secrets.AWS_ACCESS_ID }}
           SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
         run: |
-          
-          docker build -t build-server-image .
-
-         
           docker run \
             -e GIT_REPOSITORY_URL="$GIT_REPOSITORY_URL" \
             -e PROJECT_ID="$PROJECT_ID" \
             -e VARIABLE_NAME="$VARIABLE_NAME" \
             -e ACCESS_ID="$ACCESS_ID" \
             -e SECRET_KEY="$SECRET_KEY" \
-            build-server-image
+            aeroship-builder
