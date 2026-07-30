@@ -71,7 +71,10 @@ async function init() {
             await s3Client.send(command)
             publishLog(`uploaded ${file}`)
             console.log("uploaded... ", filePath)
+
+
         }
+        process.exit(0);
     })
 
     console.log("Done");
