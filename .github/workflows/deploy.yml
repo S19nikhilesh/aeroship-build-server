@@ -1,4 +1,4 @@
-name: Run Build Server
+name: Build and Run Docker Server
 
 on:
   workflow_dispatch:
@@ -13,30 +13,29 @@ on:
         type: string
 
 jobs:
-  build:
+  build-and-run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Build Server Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          node-version-file: ''
-
-      - name: Install Build Server Dependencies
-        run: npm install
-
-      - name: Clone User Repo into output folder
-        run: |
-          git clone "${{ github.event.inputs.GIT_REPOSITORY_URL }}" ./output
-
-      - name: Run Build and Upload Script
-        run: node script.js
+      - name: Build and Run Docker Container
         env:
+          GIT_REPOSITORY_URL: ${{ github.event.inputs.GIT_REPOSITORY_URL }}
+          PROJECT_ID: ${{ github.event.inputs.PROJECT_ID }}
           VARIABLE_NAME: ${{ secrets.REDIS_URL }}
           ACCESS_ID: ${{ secrets.AWS_ACCESS_ID }}
           SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          PROJECT_ID: ${{ github.event.inputs.PROJECT_ID }}
+        run: |
+          
+          docker build -t build-server-image .
+
+         
+          docker run \
+            -e GIT_REPOSITORY_URL="$GIT_REPOSITORY_URL" \
+            -e PROJECT_ID="$PROJECT_ID" \
+            -e VARIABLE_NAME="$VARIABLE_NAME" \
+            -e ACCESS_ID="$ACCESS_ID" \
+            -e SECRET_KEY="$SECRET_KEY" \
+            build-server-image
