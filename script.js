@@ -50,8 +50,21 @@ async function init() {
         console.log('Build Complete');
         publishLog("Build Complete");
         const distFolderPath = path.join(__dirname, 'output', 'dist')
-        const distFolderContents = fs.readdirSync(distFolderPath, { recursive: true })
 
+        const indexPath = path.join(distFolderPath, "index.html");
+
+        if (fs.existsSync(indexPath)) {
+            let html = fs.readFileSync(indexPath, "utf8");
+
+            html = html
+                .replaceAll('src="/', 'src="./')
+                .replaceAll('href="/', 'href="./');
+
+            fs.writeFileSync(indexPath, html);
+        }
+
+        const distFolderContents = fs.readdirSync(distFolderPath, { recursive: true })
+        
         publishLog("Starting to upload")
         for (const file of distFolderContents) {
             const filePath = path.join(distFolderPath, file);
