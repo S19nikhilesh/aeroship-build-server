@@ -58,8 +58,10 @@ async function init() {
 
             html = html
                 .replaceAll('src="/', 'src="./')
-                .replaceAll('href="/', 'href="./');
-
+                .replaceAll('src=/', 'src=./')
+                .replaceAll('href="/', 'href="./')
+                .replaceAll('href=/', 'href=./');
+                
             fs.writeFileSync(indexPath, html);
         }
 
