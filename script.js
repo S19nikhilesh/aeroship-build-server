@@ -22,13 +22,12 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID
 
-function publishLog(log) {
-    publisher.publish(
+function publishLog(log){
+    return publisher.publish(
         `logs:${PROJECT_ID}`,
         JSON.stringify({ log })
     )
 }
-
 async function init() {
     console.log('Executing script.js')
 
@@ -116,8 +115,8 @@ async function init() {
             console.log("Uploaded:", filePath)
         }
 
-        publishLog("🎉 DEPLOYMENT_COMPLETE")
-
+        await publishLog("🎉 DEPLOYMENT_COMPLETE");
+        await publisher.quit();
         process.exit(0);
     })
 
