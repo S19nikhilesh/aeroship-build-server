@@ -115,8 +115,15 @@ async function init() {
             console.log("Uploaded:", filePath)
         }
 
-        await publishLog("🎉 DEPLOYMENT_COMPLETE");
+        console.log("STEP 1: All files uploaded");
+        publishLog("🎉 DEPLOYMENT_COMPLETE");
+        
+        console.log("STEP 2: Completion log published");
+        
         await publisher.quit();
+        
+        console.log("STEP 3: Redis connection closed");
+        
         process.exit(0);
     })
 
