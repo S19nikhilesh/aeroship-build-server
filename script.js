@@ -3,16 +3,14 @@ const path = require('path')
 const fs = require('fs')
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')
 const mime = require('mime-types')
-const Redis =require('ioredis')
-
+const Redis = require('ioredis')
 
 require('dotenv').config();
 
-const publisher= new Redis(process.env.VARIABLE_NAME, {
+const publisher = new Redis(process.env.VARIABLE_NAME, {
     maxRetriesPerRequest: 1,
-    retryStrategy: () => null 
-  });
-
+    retryStrategy: () => null
+});
 
 const s3Client = new S3Client({
     region: "ap-south-1",
@@ -24,34 +22,55 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID
 
-function publishLog(log){
-    publisher.publish(`logs:${PROJECT_ID}` ,JSON.stringify({log}))
+function publishLog(log) {
+    publisher.publish(
+        `logs:${PROJECT_ID}`,
+        JSON.stringify({ log })
+    )
 }
 
 async function init() {
     console.log('Executing script.js')
-    publishLog("Build Started ....")
+
+    publishLog("🚀 Deployment started")
+
     const outDirPath = path.join(__dirname, 'output')
 
     const p = exec(`cd ${outDirPath} && npm install && npm run build`)
 
     p.stdout.on('data', function (data) {
-        console.log(data.toString());
-        publishLog(data.toString())
+        const log = data.toString().trim()
+
+        if (log) {
+            console.log(log)
+            publishLog(log)
+        }
     })
 
-
     p.stderr.on('data', function (data) {
-        console.log(data.toString());
-        publishLog(`error: ${data.toString()}`)
+        const log = data.toString().trim()
+
+        if (log) {
+            console.log(log)
+            publishLog(`⚠ ${log}`)
+        }
     })
 
     p.on('close', async function () {
-        console.log('Build Complete');
-        publishLog("Build Complete");
-        const distFolderPath = path.join(__dirname, 'output', 'dist')
 
-        const indexPath = path.join(distFolderPath, "index.html");
+        console.log('Build Complete')
+        publishLog("✓ Build completed successfully")
+
+        const distFolderPath = path.join(
+            __dirname,
+            'output',
+            'dist'
+        )
+
+        const indexPath = path.join(
+            distFolderPath,
+            "index.html"
+        )
 
         if (fs.existsSync(indexPath)) {
             let html = fs.readFileSync(indexPath, "utf8");
@@ -61,20 +80,28 @@ async function init() {
                 .replaceAll('src=/', 'src=./')
                 .replaceAll('href="/', 'href="./')
                 .replaceAll('href=/', 'href=./');
-                
+
             fs.writeFileSync(indexPath, html);
         }
 
-        const distFolderContents = fs.readdirSync(distFolderPath, { recursive: true })
-        
-        publishLog("Starting to upload")
+        const distFolderContents = fs.readdirSync(
+            distFolderPath,
+            { recursive: true }
+        )
+
+        publishLog("☁ Starting upload to storage")
+
         for (const file of distFolderContents) {
-            const filePath = path.join(distFolderPath, file);
+
+            const filePath = path.join(
+                distFolderPath,
+                file
+            );
+
             if (fs.lstatSync(filePath).isDirectory()) continue;
 
-            console.log("uploading... ", filePath)
-            publishLog(`uploading ${filePath}`)
-
+            console.log("Uploading:", filePath)
+            publishLog(`↑ Uploading ${file}`)
 
             const command = new PutObjectCommand({
                 Bucket: 'vercel-aeroship',
@@ -84,16 +111,17 @@ async function init() {
             })
 
             await s3Client.send(command)
-            publishLog(`uploaded ${file}`)
-            console.log("uploaded... ", filePath)
 
-
+            publishLog(`✓ Uploaded ${file}`)
+            console.log("Uploaded:", filePath)
         }
+
+        publishLog("🎉 DEPLOYMENT_COMPLETE")
+
         process.exit(0);
     })
 
     console.log("Done");
 }
-
 
 init();
